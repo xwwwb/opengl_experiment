@@ -1,5 +1,6 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <vector>
 using namespace std;
 GLFWwindow *window;
 int OpenGLInit();
@@ -13,6 +14,7 @@ public :
         this->y = y;
     }
 };
+
 vector<Point> points;
 bool drawLineFlag = false;
 void drawLine()
