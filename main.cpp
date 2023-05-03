@@ -101,6 +101,14 @@ void drawPoints() {
     }
 }
 
+void SinglePoint(int x,int y){
+    glColor3f(0.5, 0.66, 0.96);
+    glBegin(GL_POINTS);
+    glVertex2i(x, y);
+    glEnd();
+    glfwSwapBuffers(window);
+}
+
 void mouseHandler(GLFWwindow *window_, int button, int action, int mods) {
     glClear(GL_COLOR_BUFFER_BIT);
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
@@ -134,6 +142,7 @@ void keyHandler(GLFWwindow *window_, int key, int scancode, int action, int mods
         glfwGetCursorPos(window_, &xpos, &ypos);
         float color[] = {0.01, 0.66, 0.96};
         flood_fill(int(xpos), int(ypos), color);
+        cout << "flood fill" << endl;
     }
 }
 
@@ -141,6 +150,7 @@ void flood_fill(int xpos, int ypos, float *color) {
     stack<Point> fill_stack;
     fill_stack.emplace(xpos, ypos);
     while (!fill_stack.empty()) {
+        cout << fill_stack.size()<<endl;
         Point point = fill_stack.top();
         fill_stack.pop();
         int x = point.x;
@@ -157,15 +167,10 @@ void flood_fill(int xpos, int ypos, float *color) {
         if (pixel[0] != 1 && pixel[1] != 1 && pixel[2] != 1) {
             continue;
         }
-        glColor3fv(color);
-        glBegin(GL_POINTS);
-        glVertex2i(x, y);
-        glEnd();
-        glfwSwapBuffers(window);
+        SinglePoint(x, y);
         fill_stack.emplace(x + 1, y);
-        fill_stack.emplace(x - 1, y);
-        fill_stack.emplace(x, y + 1);
-        fill_stack.emplace(x, y - 1);
+//        fill_stack.emplace(x - 1, y);
+//        fill_stack.emplace(x, y + 1);
+//        fill_stack.emplace(x, y - 1);
     }
-
 }
