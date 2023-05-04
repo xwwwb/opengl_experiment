@@ -2,6 +2,7 @@
 #include <iostream>
 #include <vector>
 #include <stack>
+#include <queue>
 
 using namespace std;
 
@@ -27,7 +28,7 @@ void mouseHandler(GLFWwindow *, int, int, int);
 
 void keyHandler(GLFWwindow *, int, int, int, int);
 
-void flood_fill(int x, int y, float *color);
+void flood_fill(int x, int y);
 
 int main() {
     OpenGLInit();
@@ -101,10 +102,14 @@ void drawPoints() {
     }
 }
 
-void SinglePoint(int x,int y){
-    glColor3f(0.5, 0.66, 0.96);
+void SinglePoint(int x, int y) {
+    glColor3f(0.9, 0.0, 0.0);
     glBegin(GL_POINTS);
     glVertex2i(x, y);
+    glVertex2f(x + 0.1f, y + 0.1f);
+    glVertex2f(x - 0.1f, y - 0.1f);
+    glVertex2f(x + 0.1f, y - 0.1f);
+    glVertex2f(x - 0.1f, y + 0.1f);
     glEnd();
     glfwSwapBuffers(window);
 }
@@ -140,37 +145,48 @@ void keyHandler(GLFWwindow *window_, int key, int scancode, int action, int mods
         // 拿到鼠标位置
         double xpos, ypos;
         glfwGetCursorPos(window_, &xpos, &ypos);
-        float color[] = {0.01, 0.66, 0.96};
-        flood_fill(int(xpos), int(ypos), color);
-        cout << "flood fill" << endl;
+        flood_fill(int(xpos), int(ypos));
     }
 }
 
-void flood_fill(int xpos, int ypos, float *color) {
-    stack<Point> fill_stack;
-    fill_stack.emplace(xpos, ypos);
+void flood_fill(int xpos, int ypos) {
+    stack<Point *> fill_stack;
+    fill_stack.push(new Point(xpos, ypos));
+    // 保存当前像素
+    unsigned char pixel[3];
+
     while (!fill_stack.empty()) {
-        cout << fill_stack.size()<<endl;
-        Point point = fill_stack.top();
+        Point *point = fill_stack.top();
         fill_stack.pop();
-        int x = point.x;
-        int y = point.y;
-        if (x < 0 || x > 640 || y < 0 || y > 480) {
+        int x = point->x;
+        int y = point->y;
+        delete point;
+        if (x <= 1 || x >= 639 || y <= 1 || y >= 479) {
             continue;
         }
-        GLfloat pixel[4];
+
         int x_ = int(double(x) * xscale);
         int y_ = int(double(480 - y) * yscale);
         int w = int(1 * xscale);
         int h = int(1 * yscale);
-        glReadPixels(x_, y_, w, h, GL_RGB, GL_FLOAT, pixel);
-        if (pixel[0] != 1 && pixel[1] != 1 && pixel[2] != 1) {
+
+        glReadPixels(x_, y_, w, h, GL_RGB, GL_UNSIGNED_BYTE, pixel);
+
+//        if (pixel[0] == 3 && pixel[1] == 168 && pixel[2] == 245) {
+//            continue;
+//        }
+        if (pixel[0] != 255 && pixel[1] != 255 && pixel[2] != 255) {
             continue;
         }
         SinglePoint(x, y);
-        fill_stack.emplace(x + 1, y);
-//        fill_stack.emplace(x - 1, y);
-//        fill_stack.emplace(x, y + 1);
-//        fill_stack.emplace(x, y - 1);
+        fill_stack.push(new Point(x + 2, y));
+//        fill_stack.push(new Point(x + 1, y + 1));
+        fill_stack.push(new Point(x - 2, y));
+//        fill_stack.push(new Point(x + 1, y - 1));
+        fill_stack.push(new Point(x, y + 2));
+//        fill_stack.push(new Point(x - 1, y + 1));
+        fill_stack.push(new Point(x, y - 2));
+//        fill_stack.push(new Point(x - 1, y - 1));
+        cout << "flood fill" << endl;
     }
 }
