@@ -1,9 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include <queue>
 #include <stack>
 #include <vector>
-
 using namespace std;
 
 class Point {
@@ -74,7 +72,6 @@ void drawLine() {
             break;
         }
         glColor3f(0.01, 0.66, 0.96);
-        //        glColor3f(0.9, 0, 0);
         glLineWidth(5.0);
         glBegin(GL_LINE_LOOP);
         for (int i = 1; i < points_.size(); i++) {
@@ -202,8 +199,8 @@ void scanning_strip(int xpos, int ypos) {
         int l_x = point->x, r_x = point->x;// 向右行驶到最大的x 和向左行驶到最大的x
         while (r_x <= 640) {
             // 向右行驶
-            read_color(r_x, point->y, pixel);                                        // 读取颜色
-            if (int(pixel[0]) == 3 && int(pixel[1]) == 168 && int(pixel[2]) == 245) {// 碰到了边界
+            read_color(r_x, point->y, pixel);
+            if (int(pixel[0]) == 3 && int(pixel[1]) == 168 && int(pixel[2]) == 245) {
                 break;
             }
 
@@ -212,7 +209,7 @@ void scanning_strip(int xpos, int ypos) {
         }
         while (l_x >= 0) {
             read_color(l_x, point->y, pixel);
-            if (int(pixel[0]) == 3 && int(pixel[1]) == 168 && int(pixel[2]) == 245) {// 碰到了边界
+            if (int(pixel[0]) == 3 && int(pixel[1]) == 168 && int(pixel[2]) == 245) {
                 break;
             }
             SinglePoint(l_x, point->y);// 向左绘制
@@ -223,32 +220,32 @@ void scanning_strip(int xpos, int ypos) {
         int b_x = r_x, b_y = point->y + 2;
         while (b_x >= 0 && b_time < 6) {
             int result = 0;
-            read_color(b_x, b_y, pixel);                                             // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(b_x, b_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(b_x + 1, b_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(b_x + 1, b_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(b_x - 1, b_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(b_x - 1, b_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(b_x + 2, b_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(b_x + 2, b_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(b_x - 2, b_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(b_x - 2, b_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
@@ -265,32 +262,32 @@ void scanning_strip(int xpos, int ypos) {
         int u_x = r_x, u_y = point->y - 2;
         while (u_x >= 0 && u_time < 6) {
             int result = 0;
-            read_color(u_x, u_y, pixel);                                             // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(u_x, u_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(u_x + 1, u_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(u_x + 1, u_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(u_x - 1, u_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(u_x - 1, u_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(u_x + 2, u_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(u_x + 2, u_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
             }
-            read_color(u_x - 2, u_y, pixel);                                         // 检查自身是否为边界
-            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {// 不为边界
+            read_color(u_x - 2, u_y, pixel);
+            if (int(pixel[0]) != 3 && int(pixel[1]) != 168 && int(pixel[2]) != 245) {
                 if (int(pixel[0]) != 229 && int(pixel[1] != 0 && pixel[2] != 0)) {
                     result++;
                 }
