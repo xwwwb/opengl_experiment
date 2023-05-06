@@ -3,22 +3,28 @@ project(opengl)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(Class 5) # 5. 图形变换 4. 图形填充
+
 IF (WIN32)
-    # 头文件引入
     include_directories("D:\\Env\\GLFW\\include")
-    # 库文件目录
     link_directories("D:\\Env\\GLFW\\lib")
-    add_executable(opengl main.cpp)
+ELSEIF (APPLE)
+    include_directories(/Users/xwwwb/Coding/my_script/glfw/include)
+    link_directories(/Users/xwwwb/Coding/my_script/glfw/lib)
+ENDIF ()
+
+IF (Class EQUAL 4)
+    add_executable(opengl src/graphic_fill/main.cpp)
+ELSEIF (Class EQUAL 5)
+    add_executable(opengl src/transform/main.cpp)
+ENDIF ()
+
+
+IF (WIN32)
     target_link_libraries(opengl glfw3 opengl32)
 ELSEIF (APPLE)
-    # 头文件引入
-    include_directories(/Users/xwwwb/Coding/my_script/glfw/include)
-    # 库文件目录
-    link_directories(/Users/xwwwb/Coding/my_script/glfw/lib)
-    add_executable(opengl main.cpp)
     target_link_libraries(opengl glfw3 "-framework OpenGL"
             "-framework Cocoa"
             "-framework IOKit"
             "-framework CoreVideo")
 ENDIF ()
-
