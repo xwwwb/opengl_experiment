@@ -7,7 +7,9 @@ set(Class 5) # 5. 图形变换 4. 图形填充
 
 IF (WIN32)
     include_directories("D:\\Env\\GLFW\\include")
+    include_directories("D:\\Env\\Eigen")
     link_directories("D:\\Env\\GLFW\\lib")
+
 ELSEIF (APPLE)
     include_directories(/Users/xwwwb/Coding/my_script/glfw/include)
     link_directories(/Users/xwwwb/Coding/my_script/glfw/lib)
