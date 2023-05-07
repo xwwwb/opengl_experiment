@@ -56,9 +56,11 @@ public:
     }
     void draw() {
         if (is_chosen) {
-            glColor3f(1.0f, 0.0f, 0.0f);
+            // #FF5252
+            glColor3f(1.0f, 0.32f, 0.32f);
         } else {
-            glColor3f(0.0f, 0.0f, 0.0f);
+            // #2196F3
+            glColor3f(0.129f, 0.588f, 0.953f);
         }
         switch (type) {
             case LINE:
@@ -116,12 +118,11 @@ vector<Shape *> *shapes = new vector<Shape *>();
 int main() {
     OpenGLInit();
     glfwSetMouseButtonCallback(window, mouseHandler);
-    //    glfwSetCursorPosCallback(window, mouseMoveHandler);
+    glfwSetCursorPosCallback(window, mouseMoveHandler);
     //    glfwSetKeyCallback(window, keyHandler);
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(window);
     while (!glfwWindowShouldClose(window)) {
-
         glfwPollEvents();
     }
 }
@@ -141,6 +142,7 @@ int OpenGLInit() {
     // 设置坐标系
     glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
     glClearColor(1, 1, 1, 1);
+    glLineWidth(5.0);
     return 0;
 }
 
@@ -176,6 +178,7 @@ void mouseHandler(GLFWwindow *window, int button, int action, int mods) {
         domain_calculate();
     }
     draw_static();
+    glfwSwapBuffers(window);
 }
 
 
@@ -186,15 +189,42 @@ void draw_static() {
             shape->draw();
         }
     }
-    glfwSwapBuffers(window);// 什么时候交换合适呢？为什么不在draw里交换
+    // 什么时候交换合适呢？为什么不在draw里交换
 }
 void domain_calculate() {
     // 计算领域
+    // 全置为false
+    for (auto shape: *shapes) {
+        shape->is_chosen = false;
+    }
+    // 遍历所有图形
     for (auto shape: *shapes) {
         if (shape->isChosen()) {
             shape->is_chosen = true;
-        } else {
-            shape->is_chosen = false;
+            return;
         }
+    }
+}
+
+void mouseMoveHandler(GLFWwindow *window, double xpos, double ypos) {
+    glClear(GL_COLOR_BUFFER_BIT);
+    if (r_button_down) {
+        // 右键按下
+        int x2 = int(xpos);
+        int y2 = int(HEIGHT - ypos);
+        domain_x2 = x2;
+        domain_y2 = y2;
+        draw_static();
+        // 画出领域
+        // #E91E63
+        glColor3f(0.9137, 0.1176, 0.3882);
+        // 画出矩形
+        glBegin(GL_LINE_LOOP);
+        glVertex2i(domain_x1, domain_y1);
+        glVertex2i(domain_x1, domain_y2);
+        glVertex2i(domain_x2, domain_y2);
+        glVertex2i(domain_x2, domain_y1);
+        glEnd();
+        glfwSwapBuffers(window);
     }
 }
