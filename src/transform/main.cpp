@@ -8,6 +8,7 @@ using namespace std;
 int OpenGLInit();
 void mouseHandler(GLFWwindow *window, int button, int action, int mods);
 void mouseMoveHandler(GLFWwindow *window, double xpos, double ypos);
+void keyHandler(GLFWwindow *window, int key, int scancode, int action, int mods);
 void draw_static();
 void domain_calculate();// 领域计算
 void calculate();       // 进行变换
@@ -20,24 +21,21 @@ int domain_x1 = 0, domain_y1 = 0, domain_x2 = 0, domain_y2 = 0;// 领域范围
 
 enum shapeType {
     LINE,
-    ROUND,
-    ELLIPSE,
     RECTANGLE,
     TRIANGLE,
 };
 enum OPERATE {
     MOVE = 1,
     ROTATE,
-    ROTATE_CONTINUE,
     SCALE,
     SHEAR,
     DEFAULT,
 };
 
-vector<string> text = {"直线", "圆", "椭圆", "矩形", "三角形"};
-vector<string> op_text = {"位移", "旋转", "一直旋转", "缩放", "错切", "默认"};
+vector<string> text = {"直线", "矩形", "三角形"};
+vector<string> op_text = {"位移", "旋转", "缩放", "错切", "默认"};
 
-shapeType currentType = TRIANGLE;
+int currentType = RECTANGLE;
 OPERATE currentOperate = DEFAULT;
 bool l_button_down = false;
 bool r_button_down = false;
@@ -85,12 +83,13 @@ public:
                 glVertex2i(points->at(1)->x, points->at(1)->y);
                 glEnd();
                 break;
-            case ROUND:
-                break;
-            case ELLIPSE:
-                break;
             case RECTANGLE:
-
+                glBegin(GL_LINE_LOOP);
+                glVertex2i(points->at(0)->x, points->at(0)->y);
+                glVertex2i(points->at(1)->x, points->at(1)->y);
+                glVertex2i(points->at(2)->x, points->at(2)->y);
+                glVertex2i(points->at(3)->x, points->at(3)->y);
+                glEnd();
                 break;
             case TRIANGLE:
                 glBegin(GL_LINE_LOOP);
@@ -121,14 +120,18 @@ public:
                 }
                 break;
             }
-            case ROUND:
-                break;
-            case ELLIPSE:
-                break;
             case RECTANGLE: {
-
-
-            } break;
+                // 判断两个端点是否在领域内
+                int x1 = points->at(0)->x;
+                int y1 = points->at(0)->y;
+                int x2 = points->at(2)->x;
+                int y2 = points->at(2)->y;
+                if (x1 >= x_min && x1 <= x_max && y1 >= y_min && y1 <= y_max &&
+                    x2 >= x_min && x2 <= x_max && y2 >= y_min && y2 <= y_max) {
+                    return true;
+                }
+                break;
+            }
             case TRIANGLE: {
                 int x1 = points->at(0)->x;
                 int y1 = points->at(0)->y;
@@ -155,6 +158,12 @@ public:
             dx = points->front()->x > points->back()->x ? points->back()->x : points->front()->x;
             dy = points->front()->y > points->back()->y ? points->back()->y : points->front()->y;
         } else if (type == TRIANGLE) {
+            // 按三角形重心做中心点
+            dx = (points->at(0)->x + points->at(1)->x + points->at(2)->x) / 3;
+            dy = (points->at(0)->y + points->at(1)->y + points->at(2)->y) / 3;
+        } else if (type == RECTANGLE) {
+            dx = (points->at(0)->x + points->at(2)->x) / 2;
+            dy = (points->at(0)->y + points->at(2)->y) / 2;
         }
         for (auto point: *points) {
             // 根据中心点位移
@@ -162,7 +171,9 @@ public:
             point->y -= dy;
         }
         // 构造齐次矩阵
-        auto *point_matrix = new Eigen::Matrix3d();
+        // 下面这行有问题
+        auto *point_matrix = new Eigen::Matrix<double, Eigen::Dynamic, 3>();
+        point_matrix->resize(points->size(), 3);
         for (int i = 0; i < points->size(); i++) {
             (*point_matrix)(i, 0) = points->at(i)->x;
             (*point_matrix)(i, 1) = points->at(i)->y;
@@ -191,6 +202,7 @@ int main() {
     shapes = new vector<Shape *>();
     glfwSetMouseButtonCallback(window, mouseHandler);
     glfwSetCursorPosCallback(window, mouseMoveHandler);
+    glfwSetKeyCallback(window, keyHandler);
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(window);
     while (!glfwWindowShouldClose(window)) {
@@ -228,7 +240,7 @@ void mouseHandler(GLFWwindow *window, int button, int action, int mods) {
     int y1 = int(HEIGHT - y);
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         l_button_down = true;
-        auto *currentShape = new Shape(currentType);
+        auto *currentShape = new Shape(shapeType(currentType));
         currentShape->points->push_back(new Point(x1, y1));
         shapes->push_back(currentShape);
         return;
@@ -240,8 +252,19 @@ void mouseHandler(GLFWwindow *window, int button, int action, int mods) {
         } else if (currentType == TRIANGLE) {
             currentShape->points->push_back(new Point(x1, currentShape->points->front()->y));
             // 三角形的第三个点是根据第一个点的x坐标和第二个点的y坐标确定的 等边三角形
-
+            double x_1 = currentShape->points->front()->x;
+            double y_1 = currentShape->points->front()->y;
+            double y_2 = currentShape->points->back()->y;
+            double x_2 = currentShape->points->back()->x;
+            double x_3 = abs(x_2 + x_1) / 2;
+            double y_3 = y_1 + sqrt(3) / 2 * abs(x_2 - x_1);
+            currentShape->points->push_back(new Point(int(x_3), int(y_3)));
+        } else if (currentType == RECTANGLE) {
+            currentShape->points->push_back(new Point(x1, currentShape->points->front()->y));
+            currentShape->points->push_back(new Point(x1, y1));
+            currentShape->points->push_back(new Point(currentShape->points->front()->x, y1));
         }
+
         currentShape->display = true;// 左键抬起 常驻显示
     } else if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
         r_button_down = true;
@@ -355,31 +378,6 @@ void calculate() {
             delete matrix;
             break;
         }
-        case ROTATE_CONTINUE: {// 为什么会越来越小
-            auto *matrix = new Matrix<double, 3, 3>();
-            // 一次旋转5度
-            double angle = 1 * PI / 180;
-            *matrix << cos(angle), sin(angle), 0,
-                    -sin(angle), cos(angle), 0,
-                    0, 0, 1;
-            cout << "按下ESC取消" << endl;
-            while (true) {
-                glClear(GL_COLOR_BUFFER_BIT);
-                Shape::chosen_one->transform(matrix);
-                draw_static();
-                glfwSwapBuffers(window);
-                glfwPollEvents();
-                this_thread::sleep_for(chrono::milliseconds(15));
-                if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-                    glClear(GL_COLOR_BUFFER_BIT);
-                    draw_static();
-                    glfwSwapBuffers(window);
-                    break;
-                }
-            }
-            delete matrix;
-            break;
-        }
         case SCALE: {
             cout << "请输入缩放的倍数：" << endl;
             double scale;
@@ -420,4 +418,11 @@ void calculate() {
     draw_static();
     glfwSwapBuffers(window);
     calculate_result = false;
+}
+void keyHandler(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
+        // 更改currentType
+        currentType = (currentType + 1) % 3;
+        cout << "当前图形：" << text[currentType] << endl;
+    }
 }
