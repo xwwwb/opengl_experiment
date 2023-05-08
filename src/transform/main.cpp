@@ -23,6 +23,7 @@ enum shapeType {
     LINE,
     RECTANGLE,
     TRIANGLE,
+    ROUND,
 };
 enum OPERATE {
     MOVE = 1,
@@ -32,10 +33,10 @@ enum OPERATE {
     DEFAULT,
 };
 
-vector<string> text = {"直线", "矩形", "三角形"};
+vector<string> text = {"直线", "矩形", "三角形", "圆"};
 vector<string> op_text = {"位移", "旋转", "缩放", "错切", "默认"};
 
-int currentType = RECTANGLE;
+int currentType = ROUND;
 OPERATE currentOperate = DEFAULT;
 bool l_button_down = false;
 bool r_button_down = false;
@@ -57,10 +58,12 @@ public:
     bool display;
     vector<Point *> *points;
     static Shape *chosen_one;// 静态成员 被选中的那个对象
+    vector<Point *> *others;
     Shape(shapeType type) {
         this->type = type;
         this->display = false;
         points = new vector<Point *>();
+        others = new vector<Point *>();
     }
     ~Shape() {
         for (int i = 0; i < points->size(); i++) {
@@ -98,6 +101,14 @@ public:
                 glVertex2i(points->at(2)->x, points->at(2)->y);
                 glEnd();
                 break;
+            case ROUND: {
+                glBegin(GL_POINTS);
+                for (int i = 0; i < points->size(); i++) {
+                    glVertex2i(points->at(i)->x, points->at(i)->y);
+                }
+                glEnd();
+                break;
+            }
             default:
                 break;
         }
@@ -141,7 +152,18 @@ public:
                     x2 >= x_min && x2 <= x_max && y2 >= y_min && y2 <= y_max) {
                     return true;
                 }
-            } break;
+                break;
+            }
+            case ROUND: {
+                // 这里的other 可不会随着变换而变换 要一直以原图的大小和位置进行框选
+                int x = others->at(0)->x;
+                int y = others->at(0)->y;
+                int r = others->at(1)->x;
+                if (x - r >= x_min && x + r <= x_max && y - r >= y_min && y + r <= y_max) {
+                    return true;
+                }
+                break;
+            }
             default:
                 break;
         }
@@ -164,6 +186,13 @@ public:
         } else if (type == RECTANGLE) {
             dx = (points->at(0)->x + points->at(2)->x) / 2;
             dy = (points->at(0)->y + points->at(2)->y) / 2;
+        } else if (type == ROUND) {
+            dx = others->at(0)->x;
+            dy = others->at(0)->y;
+        } else {
+            // 默认按第一个点做中心点
+            dx = points->front()->x;
+            dy = points->front()->y;
         }
         for (auto point: *points) {
             // 根据中心点位移
@@ -229,6 +258,7 @@ int OpenGLInit() {
     glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
     glClearColor(1, 1, 1, 1);
     glLineWidth(5.0);
+    glPointSize(5.0);
     return 0;
 }
 
@@ -241,7 +271,11 @@ void mouseHandler(GLFWwindow *window, int button, int action, int mods) {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         l_button_down = true;
         auto *currentShape = new Shape(shapeType(currentType));
-        currentShape->points->push_back(new Point(x1, y1));
+        if (currentType == ROUND) {
+            currentShape->others->push_back(new Point(x1, y1));
+        } else {
+            currentShape->points->push_back(new Point(x1, y1));
+        }
         shapes->push_back(currentShape);
         return;
     } else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
@@ -263,6 +297,32 @@ void mouseHandler(GLFWwindow *window, int button, int action, int mods) {
             currentShape->points->push_back(new Point(x1, currentShape->points->front()->y));
             currentShape->points->push_back(new Point(x1, y1));
             currentShape->points->push_back(new Point(currentShape->points->front()->x, y1));
+        } else if (currentType == ROUND) {
+            int circle_x = currentShape->others->front()->x;
+            int circle_y = currentShape->others->front()->y;
+            int r = int(sqrt(pow(x1 - circle_x, 2) + pow(y1 - circle_y, 2)));
+            currentShape->others->push_back(new Point(r, 0));// 圆的前俩点一个是中点 一个是r
+            int x = 0;
+            int y = r;
+            int d = 1 - r;
+            while (x < y) {
+                // 画出八个点
+                currentShape->points->push_back(new Point(x + circle_x, y + circle_y));
+                currentShape->points->push_back(new Point(y + circle_x, x + circle_y));
+                currentShape->points->push_back(new Point(-x + circle_x, y + circle_y));
+                currentShape->points->push_back(new Point(-y + circle_x, x + circle_y));
+                currentShape->points->push_back(new Point(x + circle_x, -y + circle_y));
+                currentShape->points->push_back(new Point(y + circle_x, -x + circle_y));
+                currentShape->points->push_back(new Point(-x + circle_x, -y + circle_y));
+                currentShape->points->push_back(new Point(-y + circle_x, -x + circle_y));
+                if (d < 0) {
+                    d = d + 2 * x + 3;
+                } else {
+                    d = d + 2 * (x - y) + 5;
+                    y = y - 1;
+                }
+                x = x + 1;
+            }
         }
 
         currentShape->display = true;// 左键抬起 常驻显示
