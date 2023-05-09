@@ -13,6 +13,7 @@ IF (WIN32)
 ELSEIF (APPLE)
     include_directories(/Users/xwwwb/Coding/my_script/glfw/include)
     link_directories(/Users/xwwwb/Coding/my_script/glfw/lib)
+    include_directories(/Users/xwwwb/Coding/my_script/eigen-3.4.0)
 ENDIF ()
 
 IF (Class EQUAL 4)
