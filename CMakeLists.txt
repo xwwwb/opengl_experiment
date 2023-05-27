@@ -3,7 +3,7 @@ project(opengl)
 
 set(CMAKE_CXX_STANDARD 17)
 
-set(Class 1) # 5. 图形变换 4. 图形填充 3. 裁剪 2. 画圆 1. 初始化OpenGL
+set(Class 4) # 5. 图形变换 4. 图形填充 3. 裁剪 2. 画圆 1. 初始化OpenGL
 
 if (WIN32)
     include_directories("D:\\Env\\GLFW\\include")
