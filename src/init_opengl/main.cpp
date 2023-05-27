@@ -1,8 +1,4 @@
-﻿// #define ENABLE1
-
-#ifdef ENABLE1
-
-#include <iostream>
+﻿#include <iostream>
 #include <GL/glut.h>
 
 void myDisplay()
@@ -69,5 +65,3 @@ int main(int argc, char** argv)
     return 0;
 
 }
-
-#endif

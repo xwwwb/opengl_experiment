@@ -1,6 +1,3 @@
- #define ENABLE2
-
-#ifdef ENABLE2
 /*
  * title: 实验二 绘制圆形或者绘制椭圆形
  * author: xwwwb
@@ -372,4 +369,3 @@ void drawEllipse_bresenham() {
 		drawFullEllipse(x, y);
 	}
 } 
-#endif
