@@ -36,7 +36,7 @@ enum OPERATE {
 vector<string> text = {"直线", "矩形", "三角形", "圆"};
 vector<string> op_text = {"位移", "旋转", "缩放", "错切", "默认"};
 
-int currentType = ROUND;
+int currentType = RECTANGLE;
 OPERATE currentOperate = DEFAULT;
 bool l_button_down = false;
 bool r_button_down = false;
@@ -479,10 +479,11 @@ void calculate() {
     glfwSwapBuffers(window);
     calculate_result = false;
 }
+
 void keyHandler(GLFWwindow *window, int key, int scancode, int action, int mods) {
     if (key == GLFW_KEY_C && action == GLFW_PRESS) {
         // 更改currentType
-        currentType = (currentType + 1) % 3;
+        currentType = (currentType + 1) % 4;
         cout << "当前图形：" << text[currentType] << endl;
     }
 }
